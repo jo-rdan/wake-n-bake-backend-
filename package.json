@@ -4,9 +4,13 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec babel-node server/app.js",
-    "start": "babel-node server/app.js"
+    "dev": "nodemon --exec babel-node src/app.js",
+    "start": "babel-node src/app.js",
+    "db-migrate": "npx sequelize db:migrate",
+    "db-undo-migration": "npx sequelize db:migrate:undo:all"
   },
   "repository": {
     "type": "git",
@@ -22,7 +26,10 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1"
+    "express": "^4.17.1",
+    "pg": "^8.3.3",
+    "sequelize": "^6.3.5",
+    "sequelize-cli": "^6.2.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.11.6",
