@@ -1,0 +1,10 @@
+'use strict';
+
+const path = require('path');
+
+module.exports = {
+  'config': path.join('src/models', 'config', 'index.js'),
+  'models-path': path.join('src/models', 'schemas'),
+  'migrations-path': path.join('src/models', 'migrations'),
+  'seeders-path': path.join('src/models', 'seeders'),
+};
