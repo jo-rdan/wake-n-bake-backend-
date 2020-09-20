@@ -15,14 +15,14 @@ module.exports = (sequelize, DataTypes) => {
     {
       userFirstName: DataTypes.STRING,
       userLastName: DataTypes.STRING,
-      userPhone: DataTypes.STRING,
-      userEmail: DataTypes.STRING,
+      userPhone: { type: DataTypes.STRING, unique: true },
+      userEmail: { type: DataTypes.STRING, unique: true },
       userPassword: DataTypes.STRING,
       userLocation: DataTypes.STRING,
       preferredCurrency: DataTypes.STRING,
       preferredPaymentMethod: DataTypes.STRING,
-      role: DataTypes.STRING,
-      isVerified: DataTypes.BOOLEAN,
+      role: { type: DataTypes.STRING, values: ["admin", "customer", "vendor"] },
+      isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
     },
     {
       sequelize,

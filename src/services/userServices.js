@@ -1,25 +1,43 @@
-import Sequelize from 'sequelize';
-import db from '../models/index';
-import users from '../models/schemas/users';
+import { Op, DataTypes } from "sequelize";
+import { sequelize } from "../models/index";
+import users from "../models/schemas/users";
 
-class UserServices {
+class User {
   static async createUser(userData) {
     try {
-      const { DataTypes } = Sequelize;
-      const userModel = users(db.sequelize, DataTypes);
-      console.log('=====>', userData);
+      const userModel = users(sequelize, DataTypes);
+      const { userPhone, userEmail } = userData;
       const isUser = await userModel.findOne({
-        where: { userPhone: userData.userPhone },
+        where: {
+          [Op.or]: [
+            { userPhone: userPhone || "" },
+            { userEmail: userEmail || "" },
+          ],
+        },
       });
       if (!isUser) {
         const createdUser = await userModel.create(userData);
         return createdUser;
       }
       return false;
-      return isUser;
     } catch (error) {
       return error;
     }
   }
+
+  static async findByPhoneOrEmail(userPhone, userEmail) {
+    const user = users(sequelize, DataTypes);
+    const isUser = await user.findOne({
+      where: {
+        [Op.or]: [
+          { userPhone: userPhone || "" },
+          { userEmail: userEmail || "" },
+        ],
+      },
+    });
+    if (!isUser) return null;
+    return isUser;
+  }
 }
-export default UserServices;
+
+export default User;
