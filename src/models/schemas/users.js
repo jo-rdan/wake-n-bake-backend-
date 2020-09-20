@@ -1,6 +1,4 @@
-const {
-  Model
-} = require('sequelize');
+const { Model } = require("sequelize");
 
 module.exports = (sequelize, DataTypes) => {
   class users extends Model {
@@ -13,20 +11,23 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  users.init({
-    userFirstName: DataTypes.STRING,
-    userLastName: DataTypes.STRING,
-    userPhone: DataTypes.STRING,
-    userEmail: DataTypes.STRING,
-    userPassword: DataTypes.STRING,
-    userLocation: DataTypes.STRING,
-    preferredCurrency: DataTypes.STRING,
-    preferredPaymentMethod: DataTypes.STRING,
-    role: DataTypes.STRING,
-    isVerified: DataTypes.BOOLEAN
-  }, {
-    sequelize,
-    modelName: 'users',
-  });
+  users.init(
+    {
+      userFirstName: DataTypes.STRING,
+      userLastName: DataTypes.STRING,
+      userPhone: DataTypes.STRING,
+      userEmail: DataTypes.STRING,
+      userPassword: DataTypes.STRING,
+      userLocation: DataTypes.STRING,
+      preferredCurrency: DataTypes.STRING,
+      preferredPaymentMethod: DataTypes.STRING,
+      role: DataTypes.STRING,
+      isVerified: DataTypes.BOOLEAN,
+    },
+    {
+      sequelize,
+      modelName: "users",
+    }
+  );
   return users;
 };
