@@ -6,22 +6,60 @@ import {
   signinValidations,
   signupValidations,
 } from "../validations/userValidations";
+import sendEmail from "../helpers/sendEmailHelper";
 
 config();
 class User {
   static async signupConroller(req, res) {
     try {
       const { userEmail, userPhone } = req.body;
+      if (!userEmail && !userPhone)
+        return res
+          .status(422)
+          .json({ status: 422, error: "Phone number or email is required" });
+      if (userEmail) {
+        const signupSchema = signupValidations();
+        const { error } = signupSchema.validate(req.body);
+        if (error)
+          return res.status(422).json({ status: 422, error: error.message });
+        const hashedPassword = bcrypt.hashSync(req.body.userPassword, 10);
+        const isUser = await userServices.createUser({
+          userPhone,
+          userEmail,
+          userPassword: hashedPassword,
+          isVerified: false,
+        });
+        if (!isUser) {
+          return res.status(409).json({
+            status: 409,
+            error: "User already created, signin instead!",
+          });
+        }
+        // generate token with jwt
+        const userToken = jwt.sign(
+          {
+            userId: isUser.id,
+            firstName: isUser.userFirstName,
+            lastName: isUser.userLastName,
+            isVerified: isUser.isVerified,
+          },
+          process.env.APP_KEY
+        );
+        sendEmail(userEmail, userToken);
+        // return token in the data object
+        return res.status(201).json({ status: 201, data: userToken });
+      }
+
+      // if user email is not available
       const signupSchema = signupValidations();
       const { error } = signupSchema.validate(req.body);
-      console.log("iseUser=====>", error);
       if (error)
         return res.status(422).json({ status: 422, error: error.message });
-      const hashedPasswrod = bcrypt.hashSync(req.body.userPassword, 10);
+      const hashedPassword = bcrypt.hashSync(req.body.userPassword, 10);
       const isUser = await userServices.createUser({
         userPhone,
         userEmail,
-        userPassword: hashedPasswrod,
+        userPassword: hashedPassword,
         isVerified: false,
       });
       if (!isUser) {
@@ -40,6 +78,7 @@ class User {
         },
         process.env.APP_KEY
       );
+      // sendEmail(userEmail, userToken);
       // return token in the data object
       return res.status(201).json({ status: 201, data: userToken });
     } catch (error) {

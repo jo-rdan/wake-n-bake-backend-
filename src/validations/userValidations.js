@@ -4,7 +4,6 @@ export const signupValidations = () => {
   const signupSchema = Joi.object({
     userPhone: Joi.string()
       .regex(/^[-\s\./0-9]{10}$/)
-      .required()
       .error(new Error("Phone number is required and should have 10 digits")),
     userEmail: Joi.string()
       .email()
