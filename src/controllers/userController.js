@@ -13,10 +13,11 @@ class User {
   static async signupConroller(req, res) {
     try {
       const { userEmail, userPhone } = req.body;
-      if (!userEmail && !userPhone)
+      if (!userEmail && !userPhone) {
         return res
           .status(422)
           .json({ status: 422, error: "Phone number or email is required" });
+      }
       if (userEmail) {
         const signupSchema = signupValidations();
         const { error } = signupSchema.validate(req.body);
@@ -39,11 +40,11 @@ class User {
         const userToken = jwt.sign(
           {
             userId: isUser.id,
-            firstName: isUser.userFirstName,
-            lastName: isUser.userLastName,
+            userEmail: isUser.userEmail,
             isVerified: isUser.isVerified,
           },
-          process.env.APP_KEY
+          process.env.APP_KEY,
+          { expiresIn: 300 }
         );
         sendEmail(userEmail, userToken);
         // return token in the data object
@@ -69,18 +70,45 @@ class User {
         });
       }
       // generate token with jwt
+
       const userToken = jwt.sign(
         {
           userId: isUser.id,
-          firstName: isUser.userFirstName,
-          lastName: isUser.userLastName,
+          userEmail: isUser.userEmail,
           isVerified: isUser.isVerified,
         },
-        process.env.APP_KEY
+        process.env.APP_KEY,
+        { expiresIn: 300 }
       );
       // sendEmail(userEmail, userToken);
       // return token in the data object
       return res.status(201).json({ status: 201, data: userToken });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async verifyUserController(req, res) {
+    const { token } = req.params;
+    try {
+      const verifiedUser = jwt.verify(token, process.env.APP_KEY);
+      // database services
+      const foundUser = await userServices.findByPhoneOrEmail(
+        verifiedUser.userPhone || "",
+        verifiedUser.userEmail
+      );
+      if (!foundUser)
+        return res.status(404).json({ status: 404, error: "User not found" });
+      if (foundUser.isVerified) {
+        return res
+          .status(409)
+          .json({ status: 409, error: "User already verified" });
+      }
+      const updatedUser = await userServices.updateUserData(foundUser);
+      return res.status(200).json({
+        status: 200,
+        message: "User verified successfully! You can now login",
+      });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
     }
@@ -101,6 +129,12 @@ class User {
         return res.status(404).json({
           status: 404,
           error: "User not found, create an account instead",
+        });
+      }
+      if (!isUser.isVerified) {
+        return res.status(401).json({
+          status: 401,
+          error: "Account not verified!",
         });
       }
       const isPassword = bcrypt.compareSync(userPassword, isUser.userPassword);
