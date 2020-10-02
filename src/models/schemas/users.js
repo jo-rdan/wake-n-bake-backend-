@@ -1,4 +1,4 @@
-const { Model } = require("sequelize");
+const { Model } = require('sequelize');
 
 module.exports = (sequelize, DataTypes) => {
   class users extends Model {
@@ -21,12 +21,12 @@ module.exports = (sequelize, DataTypes) => {
       userLocation: DataTypes.STRING,
       preferredCurrency: DataTypes.STRING,
       preferredPaymentMethod: DataTypes.STRING,
-      role: { type: DataTypes.STRING, values: ["admin", "customer", "vendor"] },
+      role: { type: DataTypes.STRING, values: ['admin', 'customer', 'vendor'] },
       isVerified: { type: DataTypes.BOOLEAN, defaultValue: false },
     },
     {
       sequelize,
-      modelName: "users",
+      modelName: 'users',
     }
   );
   return users;
