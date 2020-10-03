@@ -1,6 +1,6 @@
-import { Op, DataTypes } from 'sequelize';
-import { sequelize } from '../models/index';
-import users from '../models/schemas/users';
+import { Op, DataTypes } from "sequelize";
+import { sequelize } from "../models/index";
+import users from "../models/schemas/users";
 
 class User {
   static async createUser(userData) {
@@ -10,8 +10,8 @@ class User {
       const isUser = await userModel.findOne({
         where: {
           [Op.or]: [
-            { userPhone: userPhone || '' },
-            { userEmail: userEmail || '' },
+            { userPhone: userPhone || "" },
+            { userEmail: userEmail || "" },
           ],
         },
       });
@@ -30,8 +30,8 @@ class User {
     const isUser = await user.findOne({
       where: {
         [Op.or]: [
-          { userPhone: userPhone || '' },
-          { userEmail: userEmail || '' },
+          { userPhone: userPhone || "" },
+          { userEmail: userEmail || "" },
         ],
       },
     });
@@ -39,11 +39,16 @@ class User {
     return isUser;
   }
 
-  static async updateUserData(user) {
+  static async updateUserData({ id, userPhone }) {
     const userModel = users(sequelize, DataTypes);
     const updatedUser = await userModel.update(
       { isVerified: true },
-      { returning: true, where: { id: user.id } }
+      {
+        returning: true,
+        where: {
+          [Op.or]: [{ userPhone: userPhone || "" }, { id: id || 0 }],
+        },
+      }
     );
     if (!updatedUser) return null;
     return updatedUser;

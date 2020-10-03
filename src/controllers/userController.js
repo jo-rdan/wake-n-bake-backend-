@@ -7,6 +7,7 @@ import {
   signupValidations,
 } from "../validations/userValidations";
 import sendEmail from "../helpers/sendEmailHelper";
+import { sendSms, verifySmsCode } from "../helpers/sendSmsHelper";
 
 config();
 class User {
@@ -28,6 +29,7 @@ class User {
           userPhone,
           userEmail,
           userPassword: hashedPassword,
+          role: "customer",
           isVerified: false,
         });
         if (!isUser) {
@@ -61,6 +63,7 @@ class User {
         userPhone,
         userEmail,
         userPassword: hashedPassword,
+        role: "customer",
         isVerified: false,
       });
       if (!isUser) {
@@ -70,7 +73,7 @@ class User {
         });
       }
       // generate token with jwt
-
+      await sendSms(isUser.userPhone, "sms");
       const userToken = jwt.sign(
         {
           userId: isUser.id,
@@ -80,15 +83,13 @@ class User {
         process.env.APP_KEY,
         { expiresIn: 300 }
       );
-      // sendEmail(userEmail, userToken);
-      // return token in the data object
       return res.status(201).json({ status: 201, data: userToken });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
     }
   }
 
-  static async verifyUserController(req, res) {
+  static async verifyUserEmailController(req, res) {
     const { token } = req.params;
     try {
       const verifiedUser = jwt.verify(token, process.env.APP_KEY);
@@ -104,11 +105,27 @@ class User {
           .status(409)
           .json({ status: 409, error: "User already verified" });
       }
-      const updatedUser = await userServices.updateUserData(foundUser);
+      await userServices.updateUserData(foundUser);
       return res.status(200).json({
         status: 200,
         message: "User verified successfully! You can now login",
       });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async verifyUserPhoneController(req, res) {
+    const { code } = req.body;
+    const { phone } = req.query;
+    try {
+      const verifyUser = await verifySmsCode(phone, code);
+      if (verifyUser.status === "pending")
+        return res.status(401).json({ status: 401, error: "Incorrect code" });
+      await userServices.updateUserData({ userPhone: phone });
+      return res
+        .status(200)
+        .json({ status: 200, message: "User account verified succesfully!" });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
     }
