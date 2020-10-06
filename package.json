@@ -7,8 +7,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec babel-node src/app.js",
-    "start": "babel-node src/app.js",
+    "dev": "NODE_ENV=production nodemon --exec babel-node src/app.js",
+    "start": "NODE_ENV=production npm run db-migrate && babel-node src/app.js",
     "db-migrate": "npx sequelize db:migrate",
     "db-undo-migration": "npx sequelize db:migrate:undo:all"
   },
@@ -34,9 +34,7 @@
     "pg": "^8.3.3",
     "sequelize": "^6.3.5",
     "sequelize-cli": "^6.2.0",
-    "twilio": "^3.49.4"
-  },
-  "devDependencies": {
+    "twilio": "^3.49.4",
     "@babel/cli": "^7.11.6",
     "@babel/core": "^7.11.6",
     "@babel/node": "^7.10.5",
@@ -45,7 +43,9 @@
     "@babel/preset-env": "^7.11.5",
     "@babel/register": "^7.11.5",
     "@babel/runtime": "^7.11.2",
-    "babel-plugin-transform-regenerator": "^6.26.0",
+    "babel-plugin-transform-regenerator": "^6.26.0"
+  },
+  "devDependencies": {
     "eslint": "^7.9.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-plugin-import": "^2.22.0",
