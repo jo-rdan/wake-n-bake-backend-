@@ -1,6 +1,6 @@
 /* eslint-disable import/prefer-default-export */
-import { Twilio } from "twilio";
-import { config } from "dotenv";
+import { Twilio } from 'twilio';
+import { config } from 'dotenv';
 
 config();
 
@@ -10,7 +10,7 @@ const client = new Twilio(
 );
 
 export const sendSms = async (to, channel) => {
-  const code = await client.verify
+  await client.verify
     .services(process.env.TWILIO_SERVICE_SID)
     .verifications.create({ to: `+25${to}`, channel });
 };
