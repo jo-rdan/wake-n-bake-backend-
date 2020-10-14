@@ -92,12 +92,25 @@ class User {
   static async verifyUserEmailController(req, res) {
     const { token } = req.params;
     try {
-      const verifiedUser = jwt.verify(token, process.env.APP_KEY);
+      const verifiedUser = jwt.decode(token);
+      const currentTime = Date.now().valueOf() / 1000;
+      if (verifiedUser.exp < currentTime) {
+        const deletedUser = await userServices.deleteUserData(
+          verifiedUser.userId
+        );
+        if (deletedUser) {
+          return res.status(401).json({
+            status: 401,
+            error: "Expired link, your account was canceled",
+          });
+        }
+        return;
+      }
       // database services
-      const foundUser = await userServices.findByPhoneOrEmail(
-        verifiedUser.userPhone || "",
-        verifiedUser.userEmail
-      );
+      const foundUser = await userServices.findUser({
+        userPhone: verifiedUser.userPhone || "",
+        userEmail: verifiedUser.userEmail,
+      });
       if (!foundUser)
         return res.status(404).json({ status: 404, error: "User not found" });
       if (foundUser.isVerified) {
@@ -105,10 +118,14 @@ class User {
           .status(409)
           .json({ status: 409, error: "User already verified" });
       }
-      await userServices.updateUserData(foundUser);
+      const updated = await userServices.updateUserData(
+        { id: verifiedUser.userId },
+        { isVerified: true }
+      );
       return res.status(200).json({
         status: 200,
         message: "User verified successfully! You can now login",
+        data: updated,
       });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
@@ -122,7 +139,10 @@ class User {
       const verifyUser = await verifySmsCode(phone, code);
       if (verifyUser.status === "pending")
         return res.status(401).json({ status: 401, error: "Incorrect code" });
-      await userServices.updateUserData({ userPhone: phone });
+      await userServices.updateUserData(
+        { userPhone: phone },
+        { isVerified: true }
+      );
       return res
         .status(200)
         .json({ status: 200, message: "User account verified succesfully!" });
@@ -138,10 +158,11 @@ class User {
       const { error } = signinSchema.validate(req.body);
       if (error)
         return res.status(422).json({ status: 422, error: error.message });
-      const isUser = await userServices.findByPhoneOrEmail(
+      const isUser = await userServices.findUser({
         userPhone,
-        userEmail
-      );
+        userEmail,
+      });
+      // console.log("userrr", isUser.dataValues);
       if (!isUser) {
         return res.status(404).json({
           status: 404,
@@ -172,6 +193,51 @@ class User {
         { expiresIn: "1h" }
       );
       return res.status(200).json({ status: 200, data: userToken });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async editUserProfileController(req, res) {
+    const { userId } = req.params;
+    try {
+      const isUser = await userServices.findUser({
+        userId,
+      });
+      if (!isUser)
+        return res.status(404).json({ status: 404, error: "User not found" });
+      const updatedUser = await userServices.updateUserData(
+        { id: userId },
+        req.body
+      );
+      const [, users] = updatedUser;
+      const { userPassword, isVerified, ...rest } = users.dataValues;
+      return res.status(200).json({
+        status: 200,
+        message: "Profile updated successfully!",
+        data: rest,
+      });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async getSingleUserController(req, res) {
+    const { userId } = req.params;
+    const foundUser = await userServices.findUser({ userId });
+    if (!foundUser)
+      return res.status(404).json({ status: 404, error: "User not found" });
+
+    const { userPassword, ...rest } = foundUser.dataValues;
+    return res
+      .status(200)
+      .json({ status: 200, message: "User found", data: rest });
+  }
+
+  static async getAllUsers(req, res) {
+    try {
+      const users = await userServices.findAllUsers();
+      return res.status(200).json({ status: 200, data: users });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
     }

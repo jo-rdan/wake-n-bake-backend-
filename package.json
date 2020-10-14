@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=production nodemon --exec babel-node src/app.js",
+    "dev": "NODE_ENV=development nodemon --exec babel-node src/app.js",
     "start": "NODE_ENV=production npm run db-migrate && babel-node src/app.js",
     "db-migrate": "npx sequelize db:migrate",
     "db-undo-migration": "npx sequelize db:migrate:undo:all"
