@@ -27,7 +27,6 @@ class User {
   }
 
   static async findUser(user) {
-    // const userModel = users(sequelize, DataTypes);
     const isUser = await userModel.findOne({
       where: {
         [Op.or]: [
@@ -43,18 +42,23 @@ class User {
 
   static async updateUserData(user, data) {
     // const userModel = users(sequelize, DataTypes);
-
     const currentUserData = await userModel.findOne({
       where: {
-        [Op.or]: [{ userPhone: user.userPhone || "" }, { id: user.id || 0 }],
+        [Op.or]: [
+          { userPhone: user.userPhone || "" },
+          { id: user.id || 0 },
+          { userEmail: user.userEmail || "" },
+        ],
       },
     });
+
     const updatedUser = await userModel.update(
       {
         userFirstName: data.firstName || currentUserData.userFirstName,
         userLastName: data.lastName || currentUserData.userLastName,
         userPhone: data.userPhone || currentUserData.userPhone,
         userEmail: data.email || currentUserData.userEmail,
+        userPassword: data.userPassword || currentUserData.userPassword,
         userLocation: data.location || currentUserData.userLocation,
         preferredCurrency: data.currency || currentUserData.preferredCurrency,
         preferredPaymentMethod:
@@ -66,10 +70,15 @@ class User {
         returning: true,
         plain: true,
         where: {
-          [Op.or]: [{ userPhone: user.userPhone || "" }, { id: user.id || 0 }],
+          [Op.or]: [
+            { userPhone: user.userPhone || "" },
+            { id: user.id || 0 },
+            { userEmail: user.userEmail || "" },
+          ],
         },
       }
     );
+
     if (!updatedUser) return null;
     return updatedUser;
   }
