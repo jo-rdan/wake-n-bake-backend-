@@ -48,7 +48,7 @@ class User {
           process.env.APP_KEY,
           { expiresIn: 300 }
         );
-        sendEmail(userEmail, userToken);
+        sendEmail(userEmail, `/email/verify/${userToken}`, "verify");
         // return token in the data object
         return res.status(201).json({ status: 201, data: userToken });
       }
@@ -125,7 +125,6 @@ class User {
       return res.status(200).json({
         status: 200,
         message: "User verified successfully! You can now login",
-        data: updated,
       });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
@@ -162,7 +161,6 @@ class User {
         userPhone,
         userEmail,
       });
-      // console.log("userrr", isUser.dataValues);
       if (!isUser) {
         return res.status(404).json({
           status: 404,
@@ -238,6 +236,99 @@ class User {
     try {
       const users = await userServices.findAllUsers();
       return res.status(200).json({ status: 200, data: users });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async resetPasswordRequest(req, res) {
+    try {
+      const { userEmail, userPhone } = req.body;
+      if (userEmail) {
+        const foundUser = await userServices.findUser({ userEmail });
+        if (!foundUser)
+          return res.status(404).json({
+            status: 404,
+            error: "Account with this email was not found",
+          });
+        if (!foundUser.isVerified)
+          return res
+            .status(403)
+            .json({ status: 403, error: "Account not verified!" });
+        const token = jwt.sign(
+          { userEmail: foundUser.userEmail },
+          process.env.APP_KEY,
+          { expiresIn: 300 }
+        );
+        sendEmail(
+          foundUser.userEmail,
+          `api/V1/users/user/reset-password/email/verify?token=${token}`,
+          "reset"
+        );
+        return res
+          .status(200)
+          .json({ status: 200, message: "Email sent successfully!" });
+      }
+
+      const foundUser = await userServices.findUser({ userPhone });
+      if (!foundUser)
+        return res.status(404).json({
+          status: 404,
+          error: "Account with this phone number was not found",
+        });
+      if (!foundUser.isVerified)
+        return res
+          .status(403)
+          .json({ status: 403, error: "Account not verified" });
+      sendSms(userPhone, "sms");
+      return res
+        .status(200)
+        .json({ status: 200, message: "SMS sent successfully!" });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async verifyResetEmailRequest(req, res) {
+    try {
+      const { newPassword, confirmPassword } = req.body;
+      const { token } = req.query;
+      const decodedToken = jwt.decode(token);
+      const currentTime = Date.now().valueOf() / 1000;
+      if (currentTime > decodedToken.exp)
+        return res
+          .status(403)
+          .json({ status: 403, error: "Token expired, reset cancelled" });
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      await userServices.updateUserData(
+        { userEmail: decodedToken.userEmail },
+        {
+          userPassword: hashedPassword,
+        }
+      );
+      return res
+        .status(200)
+        .json({ status: 200, message: "Password reset successful" });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async verifyResetSmsRequest(req, res) {
+    try {
+      const { code, phone } = req.query;
+      const { newPassword, confirmPassword } = req.body;
+      const verifyUser = await verifySmsCode(phone, code);
+      if (verifyUser.status === "pending")
+        return res.status(401).json({ status: 401, error: "Incorrect code" });
+      const hashedPassword = bcrypt.hashSync(newPassword, 10);
+      await userServices.updateUserData(
+        { userPhone: phone },
+        { userPassword: hashedPassword }
+      );
+      return res
+        .status(200)
+        .json({ status: 200, message: "Password reset successful! " });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
     }
