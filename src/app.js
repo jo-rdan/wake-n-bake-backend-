@@ -6,7 +6,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use('/api/V1/', routes);
+app.use('/api/v1/', routes);
 app.use('/', (req, res) => res
   .status(200)
   .json({ status: 200, message: "Welcome to Wake N' Bake delivery app!" }));
