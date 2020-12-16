@@ -54,15 +54,16 @@ class User {
 
     const updatedUser = await userModel.update(
       {
-        userFirstName: data.firstName || currentUserData.userFirstName,
-        userLastName: data.lastName || currentUserData.userLastName,
+        userFirstName: data.userFirstName || currentUserData.userFirstName,
+        userLastName: data.userLastName || currentUserData.userLastName,
         userPhone: data.userPhone || currentUserData.userPhone,
-        userEmail: data.email || currentUserData.userEmail,
+        userEmail: data.userEmail || currentUserData.userEmail,
         userPassword: data.userPassword || currentUserData.userPassword,
-        userLocation: data.location || currentUserData.userLocation,
-        preferredCurrency: data.currency || currentUserData.preferredCurrency,
+        userLocation: data.userLocation || currentUserData.userLocation,
+        preferredCurrency:
+          data.preferredCurrency || currentUserData.preferredCurrency,
         preferredPaymentMethod:
-          data.paymentMethod || currentUserData.preferredPaymentMethod,
+          data.preferredPaymentMethod || currentUserData.preferredPaymentMethod,
         role: data.role || currentUserData.role,
         isVerified: data.isVerified || currentUserData.isVerified,
       },
