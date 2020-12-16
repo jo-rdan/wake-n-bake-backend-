@@ -184,6 +184,8 @@ class User {
           userId: isUser.id,
           firstName: isUser.userFirstName,
           lastName: isUser.userLastName,
+          phone: isUser.userPhone || null,
+          email: isUser.userEmail || null,
           isVerified: isUser.isVerified,
           role: isUser.role,
         },
@@ -198,12 +200,20 @@ class User {
 
   static async editUserProfileController(req, res) {
     const { userId } = req.params;
+    const { phone, email } = req.user;
     try {
       const isUser = await userServices.findUser({
         userId,
       });
       if (!isUser)
         return res.status(404).json({ status: 404, error: "User not found" });
+      if (
+        (phone && phone !== isUser.userPhone) ||
+        (email && email !== isUser.userEmail)
+      )
+        return res
+          .status(403)
+          .json({ status: 403, error: "You cannot perform this action" });
       const updatedUser = await userServices.updateUserData(
         { id: userId },
         req.body
