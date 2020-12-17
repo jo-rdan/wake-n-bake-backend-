@@ -338,7 +338,20 @@ class User {
       );
       return res
         .status(200)
-        .json({ status: 200, message: "Password reset successful! " });
+        .json({ status: 200, message: "Password reset successful!" });
+    } catch (error) {
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
+  static async deleteUserAccount(req, res) {
+    try {
+      const { userId } = req.user;
+      await userServices.deleteUserData(userId);
+      return res.status(200).json({
+        status: 200,
+        message: "User account deleted successfully!",
+      });
     } catch (error) {
       return res.status(500).json({ status: 500, error: error.message });
     }
