@@ -37,5 +37,10 @@ router.get(
   userMiddleware.validateUserTokenMiddleware,
   userController.getAllUsers
 );
+router.delete(
+  "/user/delete",
+  userMiddleware.validateUserTokenMiddleware,
+  userController.deleteUserAccount
+);
 
 export default router;
