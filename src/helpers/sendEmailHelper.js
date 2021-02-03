@@ -3,7 +3,7 @@ import { config } from "dotenv";
 
 config();
 
-const sendEmail = (recipient, link, reason) => {
+export const sendEmail = (recipient, link, reason) => {
   sgMail.setApiKey(process.env.SENDGRID_API_KEY);
   const msg = {
     to: recipient,
@@ -21,4 +21,13 @@ const sendEmail = (recipient, link, reason) => {
   sgMail.send(msg);
 };
 
-export default sendEmail;
+export const sendEmailSubscriber = (to) => {
+  sgMail.setApiKey(process.env.HEAVY_API_KEY);
+  const message = {
+    to,
+    from: "heavyrwanda@gmail.com",
+    subject: "Subscription on newsletter",
+    html: `<strong>Thank you for suscribing on our newsletter</strong><br/><p>We will be sending updates of all on-going projects to this email. I you don't want to receive updates you can unsubscribe at any moment</p>`,
+  };
+  sgMail.send(message);
+};

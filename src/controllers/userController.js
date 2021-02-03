@@ -6,11 +6,25 @@ import {
   signinValidations,
   signupValidations,
 } from "../validations/userValidations";
-import sendEmail from "../helpers/sendEmailHelper";
+import { sendEmail, sendEmailSubscriber } from "../helpers/sendEmailHelper";
 import { sendSms, verifySmsCode } from "../helpers/sendSmsHelper";
 
 config();
 class User {
+  static async userSubscribe(req, res) {
+    try {
+      const { email } = req.body;
+      await userServices.createSubscribe({ email });
+      sendEmailSubscriber(email);
+      return res
+        .status(200)
+        .json({ status: 200, message: `Email sent to ${email}` });
+    } catch (error) {
+      console.log(error, "nnnnnnn");
+      return res.status(500).json({ status: 500, error: error.message });
+    }
+  }
+
   static async signupConroller(req, res) {
     try {
       const { userEmail, userPhone } = req.body;

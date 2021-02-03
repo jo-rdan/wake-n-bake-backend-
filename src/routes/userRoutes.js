@@ -43,4 +43,6 @@ router.delete(
   userController.deleteUserAccount
 );
 
+router.post("/user/subscribe", userController.userSubscribe);
+
 export default router;

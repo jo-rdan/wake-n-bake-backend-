@@ -1,8 +1,10 @@
 import { Op, DataTypes } from "sequelize";
 import { sequelize } from "../models/index";
 import users from "../models/schemas/users";
+import subscribers from "../models/schemas/subscribers";
 
 const userModel = users(sequelize, DataTypes);
+const subscribersModel = subscribers(sequelize, DataTypes);
 
 class User {
   static async createUser(userData) {
@@ -24,6 +26,11 @@ class User {
     } catch (error) {
       return error;
     }
+  }
+
+  static async createSubscribe(email) {
+    const createdSubscriber = await subscribersModel.create(email);
+    return createdSubscriber;
   }
 
   static async findUser(user) {
