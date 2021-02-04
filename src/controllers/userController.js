@@ -13,7 +13,7 @@ config();
 class User {
   static async userSubscribe(req, res) {
     try {
-      const { email } = req.body;
+      const { email } = req.query;
       await userServices.createSubscribe({ email });
       sendEmailSubscriber(email);
       return res

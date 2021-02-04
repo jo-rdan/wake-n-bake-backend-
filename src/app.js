@@ -14,7 +14,7 @@ app.get("/", (req, res) =>
     .status(200)
     .json({ status: 200, message: "Welcome to Wake N' Bake delivery app!" })
 );
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3002;
 app.listen(PORT, console.log(`App is listening on port ${PORT}`));
 
 export default app;
